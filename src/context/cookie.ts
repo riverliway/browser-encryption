@@ -15,7 +15,7 @@ export const getCookie = (cname: string): string | undefined => {
 }
 
 /**
- * Sends a cookie in the browser with a given expiration date
+ * Sets a cookie in the browser with a given expiration date
  * @param cname - the name of the cookie
  * @param cvalue - the value of the cookie
  * @param expDays - the number of days to expire in
@@ -29,4 +29,12 @@ export const setCookie = (cname: string, cvalue: string, expDays: number): void 
   d.setTime(d.getTime() + expDays * 24 * 60 * 60 * 1000)
   const expires = `expires=${d.toUTCString()}`
   document.cookie = `${cname}=${cvalue};${expires};path=/`
+}
+
+/**
+ * Removes a cookie from the browser
+ * @param cname - the name of the cookie to remove
+ */
+export const removeCookie = (cname: string): void => {
+  setCookie(cname, '', -1)
 }

@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useState } from 'react'
-import { getCookie, setCookie } from './cookie'
+import { getCookie, removeCookie, setCookie } from './cookie'
 import { hash } from '../crypto/hash'
 import { decryptObject } from '../crypto/encrypt'
 import { EncrytpedContexPattern } from '../types'
@@ -8,9 +8,10 @@ const COOKIE_NAME = 'BENCRYPTIONTOKEN'
 
 interface EncryptedContextPackage<T> {
   /**
-   * @returns the values stored in the context, decrypted
+   * @returns the values stored in the context, decrypted.
+   * It also returns a function that when called, logs out the user and removes any credentials stored
    */
-  useEncryptedContext: () => T
+  useEncryptedContext: () => { data: T, logout: () => void }
 
   /**
    * This is the context that wraps any component that needs to access encrypted data.
@@ -34,9 +35,10 @@ interface EncryptedContextPackage<T> {
  * @returns 
  */
 export function setupEncryptedContext <T extends EncrytpedContexPattern>(encryptedDataProfiles: T[]): EncryptedContextPackage<T> {
-  const EncryptedContext = React.createContext<T | undefined>(undefined)
+  type EncryptionContextItem = ReturnType<EncryptedContextPackage<T>['useEncryptedContext']>
+  const EncryptedContext = React.createContext<EncryptionContextItem | undefined>(undefined)
 
-  const useEncryptedContext = (): T => {
+  const useEncryptedContext = (): EncryptionContextItem => {
     const context = React.useContext(EncryptedContext)
     if (context === undefined) {
       throw new Error('EncryptedContext must be used within the EncryptedProvider')
@@ -97,8 +99,18 @@ export function setupEncryptedContext <T extends EncrytpedContexPattern>(encrypt
       return <props.LoginScreen validatePassword={validatePassword} />
     }
 
+    const value = {
+      data: decryptedProfile,
+      logout: () => {
+        removeCookie(COOKIE_NAME)
+        setDecryptedProfile(undefined)
+        setPassword(undefined)
+        setEncryptedProfile(undefined)
+      }
+    }
+
     return (
-      <EncryptedContext.Provider value={decryptedProfile}>
+      <EncryptedContext.Provider value={value}>
         {props.children}
       </EncryptedContext.Provider>
     )
