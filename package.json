@@ -13,8 +13,8 @@
     "lint": "ts-standard --fix 2> /dev/null && tsc --noEmit"
   },
   "peerDependencies": {
-    "react": ">=17.0.2",
-    "react-dom": ">=17.0.2"
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.5.2",
