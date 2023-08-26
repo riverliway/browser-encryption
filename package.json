@@ -29,10 +29,5 @@
   },
   "files": [
     "lib"
-  ],
-  "ts-standard": {
-    "ignore": [
-      "bundle"
-    ]
-  }
+  ]
 }
