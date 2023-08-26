@@ -1,7 +1,8 @@
 import React, { ReactNode, useEffect, useState } from 'react'
 import { getCookie, setCookie } from './cookie'
 import { hash } from '../crypto/hash'
-import { decrypt } from '../crypto/encrypt'
+import { decryptObject } from '../crypto/encrypt'
+import { EncrytpedContexPattern } from '../types'
 
 const COOKIE_NAME = 'BENCRYPTIONTOKEN'
 
@@ -23,11 +24,6 @@ interface EncryptedContextPackage<T> {
     children: ReactNode,
     LoginScreen: React.FC<{ validatePassword: (password: string) => Promise<boolean> }>
   }>
-}
-
-interface EncrytpedContexPattern {
-  hash: string
-  [key: string]: string
 }
 
 /**
@@ -75,15 +71,7 @@ export function setupEncryptedContext <T extends EncrytpedContexPattern>(encrypt
       const asyncEffect = async (): Promise<void> => {
         if (password === undefined || encryptedProfile === undefined) return
         
-        let decryptedProfile = { hash: encryptedProfile.hash } as T
-        const decryptionJobs = Object.keys(encryptedProfile).map((key: keyof T) => {
-          return async (): Promise<void> => {
-            if (key === 'hash') return
-            decryptedProfile[key] = await decrypt(password, encryptedProfile[key])
-          }
-        })
-
-        await Promise.all(decryptionJobs)
+        const decryptedProfile = await decryptObject(password, encryptedProfile)
         setDecryptedProfile(decryptedProfile)
         setLoading(false)
       }
@@ -98,6 +86,7 @@ export function setupEncryptedContext <T extends EncrytpedContexPattern>(encrypt
         const password = await hash(rawPassword)
         const encryptedProfile = await validateCredentials(password)
         if (encryptedProfile !== undefined) {
+          setCookie(COOKIE_NAME, password, 1000)
           setPassword(password)
           setEncryptedProfile(encryptedProfile)
           return true

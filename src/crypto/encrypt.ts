@@ -1,3 +1,5 @@
+import { EncrytpedContexPattern } from '../types'
+import { hash } from './hash'
 
 const SALT = '1*b99a-84ffhysim294&w22'
 const KEY_ALGO = 'PBKDF2'
@@ -24,6 +26,49 @@ export const decrypt = async (password: string, encrypted: string): Promise<any>
   const encryptedBuffer = Buffer.from(encrypted, 'base64')
   const decrypted = await global.crypto.subtle.decrypt(ENCRYPT_ALGO, key, encryptedBuffer)
   return JSON.parse(new TextDecoder().decode(decrypted))
+}
+
+/**
+ * Encrypts each field of an object using a password
+ * @param password - The password to encrypt the object with (in plaintext)
+ * @param obj - the object to encrypt
+ * @returns a new object where each of the fields are the encrytped verion of the object passed in
+ */
+export const encryptObject = async <T extends Omit<EncrytpedContexPattern, 'hash'>>(rawPassword: string, obj: T): Promise<T & { hash: string }> => {
+  const password = await hash(rawPassword)
+
+  let encryptedProfile = {} as T
+  const encryptionJobs = Object.keys(obj).map((key: keyof T) => {
+    return async (): Promise<void> => {
+      if (key === 'hash') return
+      encryptedProfile[key] = await encrypt(password, obj[key]) as T[keyof T]
+    }
+  })
+
+  await Promise.all(encryptionJobs)
+
+  const encryptedProfileWithHash = encryptedProfile as T & { hash: string }
+  encryptedProfileWithHash.hash = await hash(password)
+  return encryptedProfileWithHash
+}
+
+/**
+ * Decrypts each field of an object using a password. Does not check for password validity before attempting
+ * @param hashedPassword - the hashed version of the password
+ * @param obj - the encrypted object
+ * @returns a new object where each of the fields are the decrypted version of the object passed in
+ */
+export const decryptObject = async <T extends EncrytpedContexPattern>(hashedPassword: string, obj: T): Promise<T> => {
+  let decryptedProfile = { hash: obj.hash } as T
+  const decryptionJobs = Object.keys(obj).map((key: keyof T) => {
+    return async (): Promise<void> => {
+      if (key === 'hash') return
+      decryptedProfile[key] = await decrypt(hashedPassword, obj[key])
+    }
+  })
+
+  await Promise.all(decryptionJobs)
+  return decryptedProfile
 }
 
 /**
