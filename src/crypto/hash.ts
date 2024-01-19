@@ -1,4 +1,5 @@
-import * as forge from 'node-forge'
+const forge = require('node-forge')
+forge.options.usePureJavaScript = true
 
 const hasher = forge.md.sha256.create()
 

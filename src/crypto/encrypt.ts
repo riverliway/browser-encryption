@@ -1,6 +1,7 @@
 import { EncrytpedContexPattern } from '../types'
 import { hash } from './hash'
-import * as forge from 'node-forge'
+const forge = require('node-forge')
+forge.options.usePureJavaScript = true
 
 const ENCRYPT_ALGO = 'AES-GCM'
 const iv = forge.random.getBytesSync(16)
