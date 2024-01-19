@@ -5,6 +5,7 @@ forge.options.usePureJavaScript = true
 
 const ENCRYPT_ALGO = 'AES-GCM'
 const iv = forge.random.getBytesSync(16)
+const salt = forge.random.getBytesSync(128)
 
 /**
  * Encrypts an object using SHA-256
@@ -12,7 +13,7 @@ const iv = forge.random.getBytesSync(16)
  * @returns the encrypted version of the object
  */
 export const encrypt = (password: string, obj: any): string => {
-  const cipher = forge.cipher.createCipher(ENCRYPT_ALGO, password)
+  const cipher = forge.cipher.createCipher(ENCRYPT_ALGO, createKey(password))
   cipher.start({ iv })
 
   cipher.update(forge.util.createBuffer(JSON.stringify(obj)))
@@ -27,7 +28,7 @@ export const encrypt = (password: string, obj: any): string => {
  * @returns the decrypted version of the object
  */
 export const decrypt = (password: string, encrypted: string): any => {
-  const decipher = forge.cipher.createDecipher(ENCRYPT_ALGO, password)
+  const decipher = forge.cipher.createDecipher(ENCRYPT_ALGO, createKey(password))
   decipher.start({ iv })
 
   decipher.update(forge.util.createBuffer(encrypted))
@@ -70,4 +71,12 @@ export const decryptObject = <T extends EncrytpedContexPattern>(hashedPassword: 
   })
 
   return decryptedProfile
+}
+
+/**
+ * @param password - the password to hash
+ * @returns a key to use for encryption which is a salted hash of the password
+ */
+const createKey = (password: string): string => {
+  return forge.pkcs5.pbkdf2(password, salt, 40, 16)
 }
