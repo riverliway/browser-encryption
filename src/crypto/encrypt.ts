@@ -4,8 +4,8 @@ const forge = require('node-forge')
 forge.options.usePureJavaScript = true
 
 const ENCRYPT_ALGO = 'AES-CBC'
-const iv = forge.random.getBytesSync(16)
-const salt = forge.random.getBytesSync(128)
+const salt = forge.pkcs5.pbkdf2('jmwceuqv83945398asfdasdfv43x9p11ooiss', 'salt', 40, 128)
+const iv = forge.pkcs5.pbkdf2('miuco938iiqiwhsd', salt, 40, 16)
 
 /**
  * Encrypts an object using SHA-256
