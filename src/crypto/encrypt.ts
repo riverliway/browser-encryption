@@ -3,7 +3,7 @@ import { hash } from './hash'
 const forge = require('node-forge')
 forge.options.usePureJavaScript = true
 
-const ENCRYPT_ALGO = 'AES-GCM'
+const ENCRYPT_ALGO = 'AES-CBC'
 const iv = forge.random.getBytesSync(16)
 const salt = forge.random.getBytesSync(128)
 
