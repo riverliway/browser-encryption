@@ -23,7 +23,7 @@ interface EncryptedContextPackage<T> {
    */
   EncryptedProvider: React.FC<{
     children: ReactNode,
-    LoginScreen: React.FC<{ validatePassword: (password: string) => Promise<boolean> }>
+    LoginScreen: React.FC<{ validatePassword: (password: string) => boolean }>
   }>
 }
 
@@ -53,40 +53,32 @@ export function setupEncryptedContext <T extends EncrytpedContexPattern>(encrypt
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-      const asyncEffect = async (): Promise<void> => {
-        const cookieCreds = getCookie(COOKIE_NAME)
-        const cookieProfile = await validateCredentials(cookieCreds)
+      const cookieCreds = getCookie(COOKIE_NAME)
+      const cookieProfile = validateCredentials(cookieCreds)
 
-        if (cookieProfile !== undefined && cookieCreds !== undefined) {
-          setCookie(COOKIE_NAME, cookieCreds, 1000)
-          setPassword(cookieCreds)
-          setEncryptedProfile(cookieProfile)
-        } else {
-          setLoading(false)
-        }
+      if (cookieProfile !== undefined && cookieCreds !== undefined) {
+        setCookie(COOKIE_NAME, cookieCreds, 1000)
+        setPassword(cookieCreds)
+        setEncryptedProfile(cookieProfile)
+      } else {
+        setLoading(false)
       }
-
-      void asyncEffect()
     }, [])
 
     useEffect(() => {
-      const asyncEffect = async (): Promise<void> => {
-        if (password === undefined || encryptedProfile === undefined) return
+      if (password === undefined || encryptedProfile === undefined) return
         
-        const decryptedProfile = await decryptObject(password, encryptedProfile)
-        setDecryptedProfile(decryptedProfile)
-        setLoading(false)
-      }
-
-      void asyncEffect()
+      const decryptedProfile = decryptObject(password, encryptedProfile)
+      setDecryptedProfile(decryptedProfile)
+      setLoading(false)
     }, [password, encryptedProfile])
 
     if (loading) return <div>Loading...</div>
 
     if (password === undefined || encryptedProfile === undefined || decryptedProfile === undefined) {
-      const validatePassword = async (rawPassword: string): Promise<boolean> => {
-        const password = await hash(rawPassword)
-        const encryptedProfile = await validateCredentials(password)
+      const validatePassword = (rawPassword: string): boolean => {
+        const password = hash(rawPassword)
+        const encryptedProfile = validateCredentials(password)
         if (encryptedProfile !== undefined) {
           setCookie(COOKIE_NAME, password, 1000)
           setPassword(password)
@@ -121,9 +113,9 @@ export function setupEncryptedContext <T extends EncrytpedContexPattern>(encrypt
    * @param creds - the credentials to check
    * @returns the encrypted profile that 
    */
-  const validateCredentials = async (creds: string | undefined): Promise<T | undefined> => {
+  const validateCredentials = (creds: string | undefined): T | undefined => {
     if (creds === undefined) return undefined
-    const hashedCreds = await hash(creds)
+    const hashedCreds = hash(creds)
     return encryptedDataProfiles.find(p => p.hash === hashedCreds)
   }
 
