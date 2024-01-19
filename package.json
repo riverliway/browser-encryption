@@ -1,6 +1,6 @@
 {
   "name": "browser-encryption",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Utilities for encrypting and decrypting data in the browser",
   "author": "riverliway",
   "repository": {
