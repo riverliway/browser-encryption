@@ -11,7 +11,7 @@
   "scripts": {
     "bundle": "tsc",
     "lint": "ts-standard --fix 2> /dev/null && tsc --noEmit",
-    "publish": "npm run bundle && npm version patch && npm publish"
+    "update": "npm run bundle && npm version patch && npm publish"
   },
   "peerDependencies": {
     "react": ">=17.0.0",
