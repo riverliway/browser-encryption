@@ -31,7 +31,7 @@ export const decrypt = (password: string, encrypted: string): any => {
   const decipher = forge.cipher.createDecipher(ENCRYPT_ALGO, createKey(password))
   decipher.start({ iv })
 
-  decipher.update(forge.util.createBuffer(encrypted))
+  decipher.update(forge.util.createBuffer(forge.util.hexToBytes(encrypted)))
   decipher.finish()
 
   return JSON.parse(decipher.output.toString())
@@ -78,5 +78,5 @@ export const decryptObject = <T extends EncrytpedContexPattern>(hashedPassword: 
  * @returns a key to use for encryption which is a salted hash of the password
  */
 const createKey = (password: string): string => {
-  return forge.pkcs5.pbkdf2(password, salt, 40, 16)
+  return forge.pkcs5.pbkdf2(password, salt, 40, 32)
 }
